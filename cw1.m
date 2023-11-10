@@ -46,11 +46,18 @@ testing_labels = labels(testIndices);
 disp(['Training set size: ' num2str(length(trainIndices)) ' examples']);
 disp(['Testing set size: ' num2str(length(testIndices)) ' examples']);
 
+% create two histogram to show distribution of training and testing labels.
 figure(2);
 histogram(training_labels);
+xlabel("Letters");
+ylabel("Letter Count");
+title("training labels")
 
 figure(3);
 histogram(testing_labels);
+xlabel("Letters");
+ylabel("Letter Count");
+title("testing Labels")
 
 %built in knn -------------------------------------------------------
 tic
@@ -65,6 +72,7 @@ knnaccuracy = correctPredictions / totalTestExamples * 100;
 
 disp(['Accuracy of the KNN model: ' num2str(knnaccuracy) '%']);
 
+% plot their knn as a confusion matrix
 figure(10);
 confusionchart(testing_labels, knnpredictions);
 
@@ -87,18 +95,22 @@ confusionchart(testing_labels, dcpredictions);
 
 % euclidean distance knn
 % ---------------------------------------------------------
-tic
-k = 1; %
 
-% Initialize array for predictions
+k = 1; %set k value as 1
+
+% Initialize an empty vector for predictions.
 tepredict = zeros(size(testing_data, 1), 0);
 
-% Go through testing data to collect distance information and determine prediction
+% Loop through each testing sample
+tic
 for i = 1:size(testing_data, 1)
     %Calculate distance of current testing sample from all training samples
     comp1 = training_data;
-    comp2 = testing_data(i, :);[size(training_data, 1), 1];
-    l2 = sum((comp1 - comp2).^2, 2);
+    % calc the current testing sample
+    comp2 = testing_data(i, :); 
+    % compute squared euclidean distance between current testing sample and
+    % all training samples
+    l2 = sqrt(sum((comp1 - comp2).^2, 2));
     
     %Get minimum k row indices
     [~, ind] = sort(l2);
@@ -111,10 +123,6 @@ for i = 1:size(testing_data, 1)
     tepredict(i, 1) = mode(labs);
 end
 
-% Calculate accuracy
-% correctPredictions = sum(tepredict == testing_labels);
-% totalTestExamples = length(testing_labels);
-% accuracy = correctPredictions / totalTestExamples * 100;
 calcAcc(testing_labels,tepredict);
 toc
 
@@ -133,16 +141,16 @@ k = 1;
 % Initialize array for predictions
 tepredict = cell(size(testing_data, 1), 1);
 
-% Go through testing data to collect distance information and determine prediction
+% loop through each testing sample
 for i = 1:size(testing_data, 1)
     % Calculate distance of current testing sample from all training samples
-    comp1 = training_data;
-    comp2 = testing_data(i, :); [size(training_data, 1), 1];
-    dotProduct = sum(comp1 .* comp2, 2);
-    magnitudeComp1 = sqrt(sum(comp1.^2, 2));
-    magnitudeComp2 = sqrt(sum(comp2.^2, 2));
-    cosineSimilarity = dotProduct ./ (magnitudeComp1 .* magnitudeComp2);
-    distance = (1 - cosineSimilarity);
+    point1 = training_data; %training data
+    point2 = testing_data(i, :); % current testing data
+    dotProduct = sum(comp1 .* point2, 2); %dot product of training and current testing samples
+    magnitudep1 = sqrt(sum(point1.^2, 2)); %magnitude of training samples
+    magnitudep2 = sqrt(sum(point2.^2, 2)); %magnitude of current testing sample
+    cosineSimilarity = dotProduct ./ (magnitudep1 .* magnitudep2); %cosign similarity calculation
+    distance = (1 - cosineSimilarity); %convert similarity to distance
     % Get maximum k row indices (k nearest neighbors with highest cosine similarity)
     [~, ind] = sort(distance);
     ind = ind(1:k);
@@ -154,11 +162,9 @@ end
 
 % Calculate accuracy
 tepredict = cell2mat(tepredict);
-% correctPredictions = sum(tepredict == testing_labels);
-% totalTestExamples = length(testing_labels);
-% accuracy = correctPredictions / totalTestExamples * 100;
 calcAcc(testing_labels,tepredict);
 toc
+
 %own Cosine
 
 figure(13);
